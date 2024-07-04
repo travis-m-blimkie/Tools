@@ -1,0 +1,6 @@
+Fastq/
+FastQC/
+STAR/
+HTSeq/
+multiqc_data/
+multiqc_report.html
