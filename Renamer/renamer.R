@@ -35,13 +35,21 @@ load_excel <- function(excel_file) {
       pull(1) %>%
       grep(x = ., pattern = "Original Source Name")
   )
-
   read_xlsx(path = excel_file, skip = skip_lines) %>%
     janitor::clean_names()
 }
 
 rev_comp <- function(x) {
   stringi::stri_reverse(chartr(old = "ATGC", new = "TACG", x = x))
+}
+
+list_files <- function(path_, pattern_) {
+  found_file <- list.files(path = path_, pattern = pattern_)
+  if (length(found_file) == 0) {
+    return(NA)
+  } else {
+    found_file
+  }
 }
 
 
@@ -95,34 +103,48 @@ samples_02 <- samples_01 %>%
 
 # Create old names (file searching) and new names (table data) ------------
 
+if (!grepl("/", fastq_dir)) {
+  fastq_dir <- paste0(fastq_dir, "/")
+}
+
 samples_03 <- samples_02 %>%
   mutate(
     old_R1 = map_chr(
       index_fwdi7_revi5,
-      ~list.files(
-        path = fastq_dir,
-        pattern = paste0(.x, "_1_")
+      ~list_files(
+        path_ = fastq_dir,
+        pattern_ = paste0(.x, "_1_")
       )
     ),
     old_R2 = map_chr(
       index_fwdi7_revi5,
-      ~list.files(
-        path = fastq_dir,
-        pattern = paste0(.x, "_2_")
+      ~list_files(
+        path_ = fastq_dir,
+        pattern_ = paste0(.x, "_2_")
       )
     ),
     new_R1 = paste0(sub_library_id, "_R1.fastq.gz"),
     new_R2 = paste0(sub_library_id, "_R2.fastq.gz")
   )
 
+# Check that we found any files before proceeding
+if (any(is.na(samples_03$old_R1))) {
+  message(
+    "Error: Couldn't find any R1 files with provided information. Printing ",
+    "offending samples and quitting."
+  )
+  print(filter(samples_03, is.na(old_R1)))
+  q(save = "no")
+}
+
 
 # Write the rename commands -----------------------------------------------
 
 # Rename with "mv -v" so we can see the output, and save to a log file
 pwalk(select(samples_03, old_R1, new_R1), ~system(paste0(
-  "mv -v ", fastq_dir, "/", ..1, " ", fastq_dir, "/", ..2
+  "mv -v ", fastq_dir, ..1, " ", fastq_dir, ..2
 )))
 
 pwalk(select(samples_03, old_R2, new_R2), ~system(paste0(
-  "mv -v ", fastq_dir, "/", ..1, " ", fastq_dir, "/", ..2
+  "mv -v ", fastq_dir, ..1, " ", fastq_dir, ..2
 )))
