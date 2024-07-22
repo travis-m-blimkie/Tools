@@ -95,6 +95,7 @@ def run_versions(run_cram):
     version_multiqc_raw = sp.check_output("multiqc --version", shell=True).decode("utf-8").replace("\n", "")
     version_multiqc = "MultiQC: " + search("[0-9]{1,2}\\.[0-9]{1,2}", version_multiqc_raw).group(0)
 
+    print("Program versions:")
     print(version_fastqc)
     print(version_star)
     print(version_htseq)
