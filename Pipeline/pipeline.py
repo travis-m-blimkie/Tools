@@ -11,6 +11,7 @@ my_fastq_dir = "/mnt/qnap4/Travis_storage/HVTN_fastq/In_vitro/"
 my_genome_dir = "/mnt/analysis1/Genomes/Homo_sapiens_GRCh38_v110/"
 my_gtf_file = my_genome_dir + "Homo_sapiens.GRCh38.110.gtf"
 my_fasta_file = my_genome_dir + "Homo_sapiens.GRCh38.dna.primary_assembly.fa"
+threads = 8
 
 # Should Samtools/CRAM be run (y/n)?
 do_cram = "y"
@@ -22,7 +23,7 @@ do_cram = "y"
 # FastQC
 def run_fastqc(input_dir):
     os.makedirs(os.path.dirname("FastQC/"), exist_ok=True)
-    fastqc_command = "fastqc -q -t 6 -o FastQC/ " + input_dir + "*.fastq.gz"
+    fastqc_command = "fastqc -q -t " + threads + " -o FastQC/ " + input_dir + "*.fastq.gz"
     sp.run(fastqc_command, shell=True)
 
 
@@ -35,7 +36,7 @@ def run_star(input_dir, genome_dir):
         prefix = os.path.basename(f.replace("_R1.fastq.gz", ""))
         check_name = "STAR/" + prefix + "_Aligned.sortedByCoord.out.bam"
 
-        star_command = "STAR --runThreadN 8 --runMode alignReads --genomeLoad LoadAndKeep --limitBAMsortRAM " \
+        star_command = "STAR --runThreadN " + threads + " --runMode alignReads --genomeLoad LoadAndKeep --limitBAMsortRAM " \
             "48000000000 --outSAMtype BAM SortedByCoordinate --genomeDir " + genome_dir + " --readFilesIn " \
             + f + " --readFilesCommand zcat --outFileNamePrefix STAR/" + prefix + "_"
 
@@ -54,7 +55,7 @@ def run_star(input_dir, genome_dir):
 def run_htseq(gtf_file):
     os.makedirs(os.path.dirname("HTSeq/"), exist_ok=True)
 
-    htseq_parallel = "find STAR/ -name '*.bam' | parallel --jobs 6 'htseq-count -s reverse -a 10 -f bam -r pos {} " \
+    htseq_parallel = "find STAR/ -name '*.bam' | parallel --jobs " + threads + " 'htseq-count -s reverse -a 10 -f bam -r pos {} " \
                      + gtf_file + " > HTSeq/{/.}.count'"
     sp.run(htseq_parallel, shell=True)
 
@@ -75,7 +76,7 @@ def run_samtools(fasta_file):
     bam_files = glob("STAR/*.bam")
     for b in bam_files:
         cram_name = b.replace("bam", "cram")
-        cram_command = "samtools view --threads 6 -C " + b + " -T " + fasta_file + " > " + cram_name
+        cram_command = "samtools view --threads " + threads + " -C " + b + " -T " + fasta_file + " > " + cram_name
 
         if exists(cram_name):
             print("Skipping, CRAM file already exists for", cram_name)
