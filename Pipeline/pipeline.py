@@ -16,6 +16,10 @@ threads = 8
 # Should Samtools/CRAM be run (y/n)?
 do_cram = "y"
 
+# To run the script, modify the above parameters as desired then use the below command to run it in the background,
+# and save the output to a log file.
+# python pipeline.py &> pipeline.log &
+
 # Here's where the script starts. No editing should be required past here! Unless you want to modify the parameters
 # of, for example, STAR
 
