@@ -1,5 +1,5 @@
 # Tools
-A selection of helpful scripts/tools
+A selection of helpful scripts/tools used in my bioinformatics work.
 
 ## Pipeline
 Python script to run FastQC, STAR, HTSeq, and MultiQC on RNA-Seq data.
