@@ -4,3 +4,4 @@ STAR/
 HTSeq/
 multiqc_data/
 multiqc_report.html
+pipeline_program_versions.csv

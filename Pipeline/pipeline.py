@@ -1,5 +1,6 @@
 import os
 import subprocess as sp
+import pandas as pd
 from glob import glob
 from re import search
 from os.path import exists
@@ -14,7 +15,7 @@ my_fasta_file = my_genome_dir + "Homo_sapiens.GRCh38.dna.primary_assembly.fa"
 threads = 8
 
 # Should Samtools/CRAM be run (y/n)?
-do_cram = "y"
+do_cram = False
 
 # To run the script, modify the above parameters as desired then use the below command to run it in the background,
 # and save the output to a log file.
@@ -90,34 +91,40 @@ def run_samtools(fasta_file):
 
 # Version information
 def run_versions(run_cram):
-    version_fastqc = sp.check_output("fastqc --version", shell=True).decode("utf-8").replace("\n", "").replace("QC", "QC:")
+    version_fastqc = sp.check_output("fastqc --version", shell=True).decode("utf-8").replace("\n", "").replace("FastQC v", "")
 
-    version_star = "STAR: " + sp.check_output("STAR --version", shell=True).decode("utf-8").replace("\n", "")
+    version_star = sp.check_output("STAR --version", shell=True).decode("utf-8").replace("\n", "")
 
     version_htseq_raw = sp.check_output("htseq-count --help | grep version", shell=True, stderr=sp.STDOUT).decode("utf-8")
-    version_htseq = "HTSeq: " + search("[0-9]\\.[0-9]{1,2}\\.[0-9]{1,2}", version_htseq_raw).group(0)
+    version_htseq = search("[0-9]\\.[0-9]{1,2}\\.[0-9]{1,2}", version_htseq_raw).group(0)
 
     version_multiqc_raw = sp.check_output("multiqc --version", shell=True).decode("utf-8").replace("\n", "")
-    version_multiqc = "MultiQC: " + search("[0-9]{1,2}\\.[0-9]{1,2}", version_multiqc_raw).group(0)
+    version_multiqc = search("[0-9]{1,2}\\.[0-9]{1,2}", version_multiqc_raw).group(0)
 
-    print("Program versions:")
-    print(version_fastqc)
-    print(version_star)
-    print(version_htseq)
-    print(version_multiqc)
-
-    if run_cram == "y":
+    if not(run_cram):
+        program_version_dict = {
+            "Program": ["FastQC", "STAR", "HTSeq", "MultiQC"],
+            "Version": [version_fastqc, version_star, version_htseq, version_multiqc]
+        }
+    elif run_cram :
         version_samtools_raw = sp.check_output("samtools --version | grep samtools", shell=True).decode("utf-8").replace("\n", "")
-        version_samtools = "Samtools: " + search("[0-9]{1,2}\\.[0-9]{1,2}", version_samtools_raw).group(0)
-        print(version_samtools)
+        version_samtools = search("[0-9]{1,2}\\.[0-9]{1,2}", version_samtools_raw).group(0)
+
+        program_version_dict = {
+            "Program": ["FastQC", "STAR", "HTSeq", "MultiQC", "Samtools"],
+            "Version": [version_fastqc, version_star, version_htseq, version_multiqc, version_samtools]
+        }
+    
+    program_version_df = pd.DataFrame(program_version_dict)
+    program_version_df.to_csv("pipeline_program_versions.csv", index=False)
 
 
 # Run all the functions
-run_fastqc(input_dir=my_fastq_dir)
-run_star(input_dir=my_fastq_dir, genome_dir=my_genome_dir)
-run_htseq(gtf_file=my_gtf_file)
-run_multiqc()
-if do_cram == "y":
-    run_samtools(fasta_file=my_fasta_file)
+#run_fastqc(input_dir=my_fastq_dir)
+#run_star(input_dir=my_fastq_dir, genome_dir=my_genome_dir)
+#run_htseq(gtf_file=my_gtf_file)
+#run_multiqc()
+#if do_cram:
+#    run_samtools(fasta_file=my_fasta_file)
 run_versions(run_cram=do_cram)
 
