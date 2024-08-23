@@ -15,7 +15,7 @@ my_gtf_file = my_genome_dir + "Homo_sapiens.GRCh38.110.gtf"
 my_fasta_file = my_genome_dir + "Homo_sapiens.GRCh38.dna.primary_assembly.fa"
 threads = "8"
 
-# Should Samtools/CRAM be run (y/n)?
+# Should Samtools/CRAM be run (True/False)?
 do_cram = False
 
 # To run the script, modify the above parameters as desired then use the below command to run it in the background,
