@@ -9,10 +9,10 @@ from os.path import exists
 # Inputs to be filled out by the user before running the script. Only R1 will be used, excluding R2 from STAR and
 # everything downstream. Make sure to leave the trailing "/" for directories. The 'threads' parameter needs to be
 # string to work with concatenation.
-my_fastq_dir = "/mnt/qnap4/Travis_storage/HVTN_fastq/In_vitro/"
-my_genome_dir = "/mnt/analysis1/Genomes/Homo_sapiens_GRCh38_v110/"
-my_gtf_file = my_genome_dir + "Homo_sapiens.GRCh38.110.gtf"
-my_fasta_file = my_genome_dir + "Homo_sapiens.GRCh38.dna.primary_assembly.fa"
+my_fastq_dir = "path/to/fastq/"
+my_genome_dir = "path/to/genome/"
+my_gtf_file = my_genome_dir + "file.gtf"
+my_fasta_file = my_genome_dir + "file.fa"
 threads = "8"
 
 # Should Samtools/CRAM be run (True/False)?
